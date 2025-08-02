@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
+from loguru import logger
 
 from src.app.models.translation_task import TaskStatus
 from src.app.schemas.translation import CreateTaskRequest, TaskResponse
@@ -14,7 +15,9 @@ async def create_translation_task(
     request: CreateTaskRequest,
     service: Annotated[TranslationService, Depends(get_translation_service)],
 ):
+    logger.info(f"Creating new translation task. Request: {request.model_dump()}")
     task = await service.create_task(request)
+    logger.info(f"Translation task created successfully with ID: {task.task_id}")
 
     return TaskResponse(
         task_id=task.task_id,
@@ -35,9 +38,12 @@ async def get_task_status(
 
     Returns the current status and results of a translation task
     """
+    logger.debug(f"Fetching status for task ID: {task_id}")
     task = await service.get_task(task_id)
     if not task:
+        logger.warning(f"Task not found: {task_id}")
         raise HTTPException(status_code=404, detail="Task not found")
+    logger.debug(f"Task {task_id} status: {task.status}")
 
     # 转换 translations 格式
     translations = {}
@@ -70,9 +76,12 @@ async def cancel_task(
 
     Attempts to cancel an ongoing translation task. Returns 204 on success.
     """
+    logger.info(f"Attempting to cancel task: {task_id}")
     success = await service.cancel_task(task_id)
     if not success:
+        logger.warning(f"Failed to cancel task {task_id}: task not found or cannot be cancelled")
         raise HTTPException(status_code=404, detail="Task not found or cannot be cancelled")
+    logger.info(f"Successfully cancelled task: {task_id}")
     return None
 
 
@@ -86,28 +95,39 @@ async def get_translation(
 
     Returns the translation result for a specific language
     """
+    logger.debug(f"Fetching translation for task {task_id} in language: {language}")
     task = await service.get_task(task_id)
     if not task:
+        logger.warning(f"Task not found when fetching translation: {task_id}")
         raise HTTPException(status_code=404, detail="Task not found")
 
     if task.status != TaskStatus.COMPLETED:
+        logger.warning(f"Translation not ready for task {task_id}, current status: {task.status}")
         raise HTTPException(status_code=400, detail="Translation not ready")
 
     if not task.translations:
+        logger.warning(f"No translations found for task {task_id}")
         raise HTTPException(status_code=404, detail=f"Translation for language {language} not found")
 
     # 处理 translations 格式
     if isinstance(task.translations, list):
         # 如果是列表格式 [{'lang': 'zh-CN', 'text': '...'}]
+        logger.debug(f"Processing list format translations for task {task_id}")
         for trans in task.translations:
             if isinstance(trans, dict) and "lang" in trans and "text" in trans:
                 if trans["lang"] == language:
+                    logger.info(f"Found translation for language {language} in task {task_id}")
                     return {"text": trans["text"]}
+        logger.warning(f"Translation for language {language} not found in list format for task {task_id}")
         raise HTTPException(status_code=404, detail=f"Translation for language {language} not found")
     elif isinstance(task.translations, dict):
         # 如果是字典格式 {'zh-CN': '...'}
+        logger.debug(f"Processing dictionary format translations for task {task_id}")
         if language not in task.translations:
+            logger.warning(f"Translation for language {language} not found in dictionary format for task {task_id}")
             raise HTTPException(status_code=404, detail=f"Translation for language {language} not found")
+        logger.info(f"Found translation for language {language} in task {task_id}")
         return {"text": task.translations[language]}
     else:
+        logger.error(f"Invalid translations format for task {task_id}: {type(task.translations)}")
         raise HTTPException(status_code=404, detail=f"Translation for language {language} not found")
