@@ -96,6 +96,25 @@ async def process_single_message(consumer, translation_service, msg)
 
 ## 3. 部署架构
 
+### 3.1 系统架构图
+
+![系统架构图](diagram.png)
+
+系统主要包含以下组件：
+- 客户端：通过 API 接口创建翻译任务和查询任务状态
+- API 服务：处理 `/api/v1/translation` 相关的请求
+- 消息队列：包含 Audio Topic、Text Topic 和 Package Topic
+- Workers：
+  - Audio Worker：处理语音识别和翻译
+  - Text Worker：处理文本翻译
+  - Package Worker：处理打包服务
+- 存储层：
+  - PostgreSQL：存储任务和状态信息
+  - Redis：缓存服务
+  - 打包文件存储：存储最终的翻译包
+
+### 3.2 服务编排
+
 使用 Docker Compose 进行服务编排：
 
 ```yaml
