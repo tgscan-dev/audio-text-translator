@@ -7,12 +7,12 @@ from tenacity import retry, stop_after_attempt, wait_none
 
 from src.app.core.config import settings
 from src.app.core.db.database import local_session
-from src.app.core.utils.multilingual_translation import translate
 from src.app.core.utils.message_queue import (
     get_kafka_producer,
     get_text_translation_consumer,
     setup_text_translation_consumer,
 )
+from src.app.core.utils.multilingual_translation import translate
 from src.app.models.translation_task import TaskStatus
 from src.app.schemas.translation import QueuedTask
 from src.app.service.translation import TranslationService

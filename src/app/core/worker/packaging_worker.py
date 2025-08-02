@@ -1,16 +1,16 @@
 import asyncio
 import traceback
-from datetime import datetime, UTC
+from datetime import datetime
 from pathlib import Path
-import psutil
 
+import psutil
 from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_none
 
 from src.app.core.config import settings
 from src.app.core.db.database import local_session
-from src.app.core.utils.package_file import TaskData, TextSource, TranslationPackage
 from src.app.core.utils.message_queue import get_text_packaging_consumer, setup_text_packaging_consumer
+from src.app.core.utils.package_file import TaskData, TextSource, TranslationPackage
 from src.app.models.translation_task import LanguageCode, TaskStatus
 from src.app.schemas.translation import QueuedTask
 from src.app.service.translation import TranslationService
@@ -89,12 +89,11 @@ async def update_task_result(translation_service, task, package_file):
     await translation_service.update_task(task)
 
 
-
 async def process_single_message(msg):
     """Process a single message and return its offset if successful"""
     db = local_session()
     translation_service = TranslationService(db)
-    
+
     try:
         queued_task = await validate_message(msg)
         if not queued_task:
@@ -107,7 +106,7 @@ async def process_single_message(msg):
         package_file = await process_package_task(task)
         await update_task_result(translation_service, task, package_file)
         return msg.offset
-            
+
     except Exception as e:
         task_id = queued_task.task_id if queued_task else "unknown"
         error_trace = traceback.format_exc()
@@ -117,36 +116,35 @@ async def process_single_message(msg):
     finally:
         await db.close()
 
+
 async def process_partition_messages(consumer, partition, messages):
     """Process messages from a single partition concurrently"""
     # 创建所有消息的并发任务
-    tasks = [
-        asyncio.create_task(process_single_message(msg))
-        for msg in messages
-    ]
-    
+    tasks = [asyncio.create_task(process_single_message(msg)) for msg in messages]
+
     # 等待所有任务完成
     done = await asyncio.gather(*tasks)
-    
+
     # 收集成功处理的消息 offset
     offsets = [offset for offset in done if offset is not None]
-    
+
     # 提交该分区的最大 offset + 1
     if offsets:
         max_offset = max(offsets)
-        await consumer.commit({
-            partition: max_offset + 1
-        })
-        logger.debug(f"Partition {partition.topic}[{partition.partition}] processed and committed up to offset {max_offset}")
+        await consumer.commit({partition: max_offset + 1})
+        logger.debug(
+            f"Partition {partition.topic}[{partition.partition}] processed and committed up to offset {max_offset}"
+        )
+
 
 def get_dynamic_batch_size():
     """根据内存使用情况动态调整批处理大小"""
     # 获取内存使用情况
     memory = psutil.virtual_memory()
-    
+
     # 基础批处理大小
     BASE_BATCH_SIZE = 50
-    
+
     # 根据可用内存百分比调整批处理大小
     if memory.percent >= 90:  # 内存使用率 >= 90%
         return max(10, BASE_BATCH_SIZE // 4)  # 最小保持10
@@ -156,6 +154,7 @@ def get_dynamic_batch_size():
         return BASE_BATCH_SIZE  # 50
     else:  # 内存充足
         return min(BASE_BATCH_SIZE * 2, 200)  # 最大不超过200
+
 
 async def process_package_messages():
     """Process package messages concurrently"""
@@ -181,21 +180,21 @@ async def process_package_messages():
 
             # 使用 getmany 批量获取消息
             messages = await consumer.getmany(timeout_ms=1000, max_records=batch_size)
-            
+
             if not messages:
                 # 如果没有新消息，短暂等待后继续
                 await asyncio.sleep(0.1)
                 continue
-                
+
             # 处理每个分区的消息
             for partition, partition_messages in messages.items():
                 if not partition_messages:
                     continue
-                    
+
                 await process_partition_messages(
-                    consumer, 
-                    partition, 
-                    partition_messages, 
+                    consumer,
+                    partition,
+                    partition_messages,
                 )
 
     except Exception as e:

@@ -17,9 +17,9 @@ import struct
 import zlib
 from enum import Enum
 from pathlib import Path
-from typing import Optional
 
 import aiofiles
+
 from src.app.models.translation_task import LanguageCode
 
 
@@ -149,7 +149,7 @@ class TranslationPackage:
     def __init__(self, file_path: str | Path):
         self.file_path = Path(file_path)
         self.index: dict[str, IndexEntry] = {}
-        self._mmap: Optional[mmap.mmap] = None
+        self._mmap: mmap.mmap | None = None
         self._file = None
         self._lock = asyncio.Lock()
 

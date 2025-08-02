@@ -1,12 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
-
-from src.app.schemas.translation import CreateTaskRequest, TaskResponse
-from src.app.service.translation import TranslationService, get_translation_service
-from fastapi import HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from src.app.models.translation_task import TaskStatus
+from src.app.schemas.translation import CreateTaskRequest, TaskResponse
+from src.app.service.translation import TranslationService, get_translation_service
+
 router = APIRouter(tags=["translations"])
 
 
@@ -27,16 +26,13 @@ async def create_translation_task(
     )
 
 
-
-
-
 @router.get("/tasks/{task_id}", response_model=TaskResponse, response_model_exclude_none=True)
 async def get_task_status(
     task_id: str,
     service: Annotated[TranslationService, Depends(get_translation_service)],
 ):
     """Get task status
-    
+
     Returns the current status and results of a translation task
     """
     task = await service.get_task(task_id)
@@ -49,8 +45,8 @@ async def get_task_status(
         if isinstance(task.translations, list):
             # 如果是列表格式 [{'lang': 'zh-CN', 'text': '...'}]，转换为字典格式
             for trans in task.translations:
-                if isinstance(trans, dict) and 'lang' in trans and 'text' in trans:
-                    translations[trans['lang']] = trans['text']
+                if isinstance(trans, dict) and "lang" in trans and "text" in trans:
+                    translations[trans["lang"]] = trans["text"]
         elif isinstance(task.translations, dict):
             # 如果已经是字典格式，直接使用
             translations = task.translations
@@ -61,7 +57,7 @@ async def get_task_status(
         stt_result=task.stt_result,
         stt_accuracy=task.stt_score,
         translations=translations,
-        error_message=task.error_message if hasattr(task, 'error_message') else None
+        error_message=task.error_message if hasattr(task, "error_message") else None,
     )
 
 
@@ -71,7 +67,7 @@ async def cancel_task(
     service: Annotated[TranslationService, Depends(get_translation_service)],
 ):
     """Cancel a translation task
-    
+
     Attempts to cancel an ongoing translation task. Returns 204 on success.
     """
     success = await service.cancel_task(task_id)
@@ -87,7 +83,7 @@ async def get_translation(
     service: Annotated[TranslationService, Depends(get_translation_service)],
 ):
     """Get translation result
-    
+
     Returns the translation result for a specific language
     """
     task = await service.get_task(task_id)
@@ -104,9 +100,9 @@ async def get_translation(
     if isinstance(task.translations, list):
         # 如果是列表格式 [{'lang': 'zh-CN', 'text': '...'}]
         for trans in task.translations:
-            if isinstance(trans, dict) and 'lang' in trans and 'text' in trans:
-                if trans['lang'] == language:
-                    return {"text": trans['text']}
+            if isinstance(trans, dict) and "lang" in trans and "text" in trans:
+                if trans["lang"] == language:
+                    return {"text": trans["text"]}
         raise HTTPException(status_code=404, detail=f"Translation for language {language} not found")
     elif isinstance(task.translations, dict):
         # 如果是字典格式 {'zh-CN': '...'}

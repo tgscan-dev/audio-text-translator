@@ -8,12 +8,12 @@ from tenacity import retry, stop_after_attempt, wait_none
 
 from src.app.core.config import settings
 from src.app.core.db.database import local_session
-from src.app.core.utils.multilingual_translation import translate
 from src.app.core.utils.message_queue import (
     get_audio_translation_consumer,
     get_kafka_producer,
     setup_audio_translation_consumer,
 )
+from src.app.core.utils.multilingual_translation import translate
 from src.app.core.utils.stt import aspeech2text
 from src.app.core.utils.stt_score import validate_stt
 from src.app.models.translation_task import TaskStatus
