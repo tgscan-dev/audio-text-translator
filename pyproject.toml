@@ -5,7 +5,7 @@ description = "A fully Async FastAPI boilerplate using SQLAlchemy and Pydantic 2
 authors = [{ name = "Igor Magalhaes", email = "igor.magalhaes.r@gmail.com" }]
 license = { text = "MIT" }
 readme = "README.md"
-requires-python = "~=3.11"
+requires-python = "~=3.13"
 dependencies = [
     "python-dotenv>=1.0.0",
     "pydantic[email]>=2.6.1",
@@ -32,6 +32,11 @@ dependencies = [
     "aiokafka>=0.10.0",
     "loguru>=0.7.3",
     "openai-whisper>=20250625",
+    "langchain>=0.3.27",
+    "langchain-openai>=0.3.28",
+    "tenacity>=9.1.2",
+    "aiofiles>=24.1.0",
+    "psutil>=7.0.0",
 ]
 
 [project.optional-dependencies]
@@ -108,7 +113,7 @@ dev = [
 ]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.13"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true

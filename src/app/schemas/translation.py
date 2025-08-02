@@ -7,8 +7,12 @@ from src.app.models.translation_task import LanguageCode, TaskStatus, TaskType
 
 class CreateTaskRequest(BaseModel):
     type: TaskType
-    source_file: str  # 源文件路径
-    reference_text: str | None = None  # 参考文本
+
+    source_file: str | None = None  # 源文件路径 (音频文件)
+    reference_text: str | None = None  # 参考文本(音频文件)
+
+    text: str | None = None  # 纯文本内容 (仅用于文本翻译任务)
+
     target_languages: list[LanguageCode]  # 目标语言列表
 
     class Config:
@@ -20,6 +24,30 @@ class CreateTaskRequest(BaseModel):
                 "target_languages": ["zh-CN", "ja-JP", "ko-KR", "en-US"],  # API会自动验证这些值是否在LanguageCode枚举中
             }
         }
+
+
+class QueuedTask(BaseModel):
+    task_id: str  # 任务唯一标识
+    type: TaskType
+
+    source_file: str | None = None  # 源文件路径
+    reference_text: str | None = None  # 参考文本
+
+    text: str | None = None
+
+    target_languages: list[LanguageCode]  # 目标语言列表
+
+    @staticmethod
+    def from_create_request(request: CreateTaskRequest, task_id: str) -> "QueuedTask":
+        """从CreateTaskRequest创建QueuedTask"""
+        return QueuedTask(
+            task_id=task_id,
+            type=request.type,
+            source_file=request.source_file,
+            text=request.text,
+            reference_text=request.reference_text,
+            target_languages=request.target_languages,
+        )
 
 
 class TaskResponse(BaseModel):

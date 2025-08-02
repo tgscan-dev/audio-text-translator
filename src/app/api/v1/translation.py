@@ -19,7 +19,7 @@ async def create_translation_task(
         task_id=task.task_id,
         status=task.status,
         stt_result=task.stt_result,
-        stt_accuracy=task.stt_accuracy,
+        stt_accuracy=task.stt_score,
         translations=task.translations,
         error_message=None,
     )

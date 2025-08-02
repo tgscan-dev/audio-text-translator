@@ -7,9 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.app.core.config import settings
 from src.app.core.db.database import async_get_db
-from src.app.core.utils.queue import get_kafka_producer
+from src.app.core.utils.message_queue import get_kafka_producer
 from src.app.models.translation_task import TaskStatus, TaskType, TranslationTask
-from src.app.schemas.translation import CreateTaskRequest
+from src.app.schemas.translation import CreateTaskRequest, QueuedTask
 
 
 class TranslationService:
@@ -36,10 +36,12 @@ class TranslationService:
         """创建新的翻译任务"""
         # 创建任务实例
         task = TranslationTask()
-        task.task_id = str(uuid.uuid4())
+        task_id = str(uuid.uuid4())
+        task.task_id = task_id
         task.type = request.type
         task.source_file = request.source_file
         task.reference_text = request.reference_text
+        task.text = request.text
         task.target_languages = request.target_languages
         task.status = TaskStatus.PENDING
         task.created_at = datetime.utcnow()
@@ -48,17 +50,25 @@ class TranslationService:
         # 添加到数据库
         self.db.add(task)
 
-        # 发送到消息队列
-        producer = get_kafka_producer()
-        request_dict = request.model_dump()
-        if request.type == TaskType.TEXT:
-            await producer.send(settings.KAFKA_TRANSLATION_TOPIC, request_dict)  # 发送文本翻译任务
-        elif request.type == TaskType.AUDIO:
-            await producer.send(settings.KAFKA_AUDIO_TOPIC, request_dict)  # 发送音频翻译任务
-
         await self.db.commit()
         await self.db.refresh(task)
 
+        # 发送到消息队列
+        producer = await get_kafka_producer()
+        queued_task = QueuedTask.from_create_request(request, task_id)
+        queued_task_dict = queued_task.model_dump()
+        if request.type == TaskType.TEXT:
+            await producer.send(settings.KAFKA_TRANSLATION_TOPIC, queued_task_dict)  # 发送文本翻译任务
+        elif request.type == TaskType.AUDIO:
+            await producer.send(settings.KAFKA_AUDIO_TOPIC, queued_task_dict)  # 发送音频翻译任务
+
+        return task
+
+    async def update_task(self, task: TranslationTask) -> TranslationTask | None:
+        """更新任务状态"""
+        task.updated_at = datetime.utcnow()
+        await self.db.commit()
+        await self.db.refresh(task)
         return task
 
 

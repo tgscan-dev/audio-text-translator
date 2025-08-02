@@ -17,6 +17,8 @@ class AppSettings(BaseSettings):
     LICENSE_NAME: str | None = config("LICENSE", default=None)
     CONTACT_NAME: str | None = config("CONTACT_NAME", default=None)
     CONTACT_EMAIL: str | None = config("CONTACT_EMAIL", default=None)
+    PACKAGE_DIR: str | None = config("PACKAGE_DIR", default="packs")
+    OPENAI_API_KEY: SecretStr = config("OPENAI_API_KEY", cast=SecretStr, default="")
 
 
 class CryptSettings(BaseSettings):

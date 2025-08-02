@@ -106,9 +106,9 @@ async def setup_kafka_producer() -> None:
         raise HTTPException(status_code=500, detail=f"Failed to connect to Kafka producer: {str(e)}")
 
 
-def get_kafka_producer() -> AIOKafkaProducer:
+async def get_kafka_producer() -> AIOKafkaProducer:
     """Get the Kafka producer instance."""
     global _producer
     if _producer is None:
-        raise HTTPException(status_code=500, detail="Kafka producer is not initialized")
+        await setup_kafka_producer()
     return _producer

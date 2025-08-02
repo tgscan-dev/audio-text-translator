@@ -8,6 +8,7 @@ from fastapi import APIRouter, FastAPI
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
 
+from .utils.message_queue import setup_kafka_producer
 from ..middleware.client_cache_middleware import ClientCacheMiddleware
 from ..models import *  # noqa: F403
 from .config import (
@@ -25,7 +26,6 @@ from .config import (
 from .db.database import Base
 from .db.database import async_engine as engine
 from .utils import cache
-from .utils.queue import setup_kafka_producer
 
 
 # -------------- database --------------
