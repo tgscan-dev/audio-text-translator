@@ -21,12 +21,6 @@ class AppSettings(BaseSettings):
     OPENAI_API_KEY: SecretStr = config("OPENAI_API_KEY", cast=SecretStr, default="")
 
 
-class CryptSettings(BaseSettings):
-    SECRET_KEY: SecretStr = config("SECRET_KEY", cast=SecretStr)
-    ALGORITHM: str = config("ALGORITHM", default="HS256")
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = config("ACCESS_TOKEN_EXPIRE_MINUTES", default=30)
-    REFRESH_TOKEN_EXPIRE_DAYS: int = config("REFRESH_TOKEN_EXPIRE_DAYS", default=7)
-
 
 class DatabaseSettings(BaseSettings):
     pass
@@ -62,15 +56,6 @@ class PostgresSettings(DatabaseSettings):
     POSTGRES_URL: str | None = config("POSTGRES_URL", default=None)
 
 
-class FirstUserSettings(BaseSettings):
-    ADMIN_NAME: str = config("ADMIN_NAME", default="admin")
-    ADMIN_EMAIL: str = config("ADMIN_EMAIL", default="admin@admin.com")
-    ADMIN_USERNAME: str = config("ADMIN_USERNAME", default="admin")
-    ADMIN_PASSWORD: str = config("ADMIN_PASSWORD", default="!Ch4ng3Th1sP4ssW0rd!")
-
-
-class TestSettings(BaseSettings):
-    ...
 
 
 class RedisCacheSettings(BaseSettings):
@@ -83,41 +68,7 @@ class ClientSideCacheSettings(BaseSettings):
     CLIENT_CACHE_MAX_AGE: int = config("CLIENT_CACHE_MAX_AGE", default=60)
 
 
-class RedisQueueSettings(BaseSettings):
-    REDIS_QUEUE_HOST: str = config("REDIS_QUEUE_HOST", default="localhost")
-    REDIS_QUEUE_PORT: int = config("REDIS_QUEUE_PORT", default=6379)
 
-
-class RedisRateLimiterSettings(BaseSettings):
-    REDIS_RATE_LIMIT_HOST: str = config("REDIS_RATE_LIMIT_HOST", default="localhost")
-    REDIS_RATE_LIMIT_PORT: int = config("REDIS_RATE_LIMIT_PORT", default=6379)
-    REDIS_RATE_LIMIT_URL: str = f"redis://{REDIS_RATE_LIMIT_HOST}:{REDIS_RATE_LIMIT_PORT}"
-
-
-class DefaultRateLimitSettings(BaseSettings):
-    DEFAULT_RATE_LIMIT_LIMIT: int = config("DEFAULT_RATE_LIMIT_LIMIT", default=10)
-    DEFAULT_RATE_LIMIT_PERIOD: int = config("DEFAULT_RATE_LIMIT_PERIOD", default=3600)
-
-
-class CRUDAdminSettings(BaseSettings):
-    CRUD_ADMIN_ENABLED: bool = config("CRUD_ADMIN_ENABLED", default=True)
-    CRUD_ADMIN_MOUNT_PATH: str = config("CRUD_ADMIN_MOUNT_PATH", default="/admin")
-
-    CRUD_ADMIN_ALLOWED_IPS_LIST: list[str] | None = None
-    CRUD_ADMIN_ALLOWED_NETWORKS_LIST: list[str] | None = None
-    CRUD_ADMIN_MAX_SESSIONS: int = config("CRUD_ADMIN_MAX_SESSIONS", default=10)
-    CRUD_ADMIN_SESSION_TIMEOUT: int = config("CRUD_ADMIN_SESSION_TIMEOUT", default=1440)
-    SESSION_SECURE_COOKIES: bool = config("SESSION_SECURE_COOKIES", default=True)
-
-    CRUD_ADMIN_TRACK_EVENTS: bool = config("CRUD_ADMIN_TRACK_EVENTS", default=True)
-    CRUD_ADMIN_TRACK_SESSIONS: bool = config("CRUD_ADMIN_TRACK_SESSIONS", default=True)
-
-    CRUD_ADMIN_REDIS_ENABLED: bool = config("CRUD_ADMIN_REDIS_ENABLED", default=False)
-    CRUD_ADMIN_REDIS_HOST: str = config("CRUD_ADMIN_REDIS_HOST", default="localhost")
-    CRUD_ADMIN_REDIS_PORT: int = config("CRUD_ADMIN_REDIS_PORT", default=6379)
-    CRUD_ADMIN_REDIS_DB: int = config("CRUD_ADMIN_REDIS_DB", default=0)
-    CRUD_ADMIN_REDIS_PASSWORD: str | None = config("CRUD_ADMIN_REDIS_PASSWORD", default="None")
-    CRUD_ADMIN_REDIS_SSL: bool = config("CRUD_ADMIN_REDIS_SSL", default=False)
 
 
 class EnvironmentOption(Enum):
@@ -147,15 +98,8 @@ class EnvironmentSettings(BaseSettings):
 class Settings(
     AppSettings,
     PostgresSettings,
-    CryptSettings,
-    FirstUserSettings,
-    TestSettings,
     RedisCacheSettings,
     ClientSideCacheSettings,
-    RedisQueueSettings,
-    RedisRateLimiterSettings,
-    DefaultRateLimitSettings,
-    CRUDAdminSettings,
     EnvironmentSettings,
     KafkaSettings,
 ):

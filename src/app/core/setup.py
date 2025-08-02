@@ -18,8 +18,6 @@ from .config import (
     EnvironmentSettings,
     KafkaSettings,
     RedisCacheSettings,
-    RedisQueueSettings,
-    RedisRateLimiterSettings,
     settings,
 )
 from .db.database import Base
@@ -51,8 +49,6 @@ def lifespan_factory(
         | RedisCacheSettings
         | AppSettings
         | ClientSideCacheSettings
-        | RedisQueueSettings
-        | RedisRateLimiterSettings
         | EnvironmentSettings
     ),
     create_tables_on_start: bool = True,
@@ -95,8 +91,6 @@ def create_application(
         | RedisCacheSettings
         | AppSettings
         | ClientSideCacheSettings
-        | RedisQueueSettings
-        | RedisRateLimiterSettings
         | EnvironmentSettings
     ),
     create_tables_on_start: bool = True,
