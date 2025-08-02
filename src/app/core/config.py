@@ -21,7 +21,6 @@ class AppSettings(BaseSettings):
     OPENAI_API_KEY: SecretStr = config("OPENAI_API_KEY", cast=SecretStr, default="")
 
 
-
 class DatabaseSettings(BaseSettings):
     pass
 
@@ -56,8 +55,6 @@ class PostgresSettings(DatabaseSettings):
     POSTGRES_URL: str | None = config("POSTGRES_URL", default=None)
 
 
-
-
 class RedisCacheSettings(BaseSettings):
     REDIS_CACHE_HOST: str = config("REDIS_CACHE_HOST", default="localhost")
     REDIS_CACHE_PORT: int = config("REDIS_CACHE_PORT", default=6379)
@@ -66,9 +63,6 @@ class RedisCacheSettings(BaseSettings):
 
 class ClientSideCacheSettings(BaseSettings):
     CLIENT_CACHE_MAX_AGE: int = config("CLIENT_CACHE_MAX_AGE", default=60)
-
-
-
 
 
 class EnvironmentOption(Enum):

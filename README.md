@@ -5,6 +5,7 @@
 ![流程架构图](diagram.png)
 
 系统主要包含以下组件：
+
 - 客户端：通过 API 接口创建翻译任务和查询任务状态
 - API 服务：处理 `/api/v1/translation` 相关的请求
 - 消息队列：包含 Audio Topic、Text Topic 和 Package Topic
@@ -20,6 +21,7 @@
 ## 1. 服务设计与开发
 
 ### 1.1 翻译任务接口
+
 项目实现了完整的 RESTful API，支持以下功能：
 
 ```python
@@ -31,7 +33,9 @@
 ```
 
 ### 1.2 语音识别与准确性校验
+
 - 使用 Whisper 进行语音识别：
+
 ```python
 # src/app/core/worker/audio_worker.py
 async def process_audio_task(queued_task):
@@ -43,6 +47,7 @@ async def process_audio_task(queued_task):
 - 通过 `stt_score.py` 实现准确性校验，对比原始文本和 STT 生成内容
 
 ### 1.3 多语言翻译
+
 - 支持多语种翻译，包括：
   - 英语 (en)
   - 简体中文 (zh-CN)
@@ -51,17 +56,18 @@ async def process_audio_task(queued_task):
 - 使用 `multilingual_translation.py` 处理翻译任务
 
 ### 1.4 文本打包系统
+
 项目实现了高效的文本打包机制：
 
 ```python
 # src/app/core/worker/packaging_worker.py
 async def process_package_task(task):
     package_data = TaskData(task.task_id)
-    
+
     # 添加文本翻译
     for translation in task.translations:
         package_data.add_translation(TextSource.TEXT, lang, text)
-    
+
     # 添加音频翻译
     if task.stt_result:
         for lang in task.target_languages:
@@ -69,6 +75,7 @@ async def process_package_task(task):
 ```
 
 ### 1.5 错误处理与日志记录
+
 - 使用 loguru 进行日志管理
 - 实现了完整的错误处理机制：
   - 数据库事务回滚
@@ -78,6 +85,7 @@ async def process_package_task(task):
 ## 2. 可靠性 & 可扩展性
 
 ### 2.1 分布式系统设计
+
 - 使用 Kafka 进行消息队列
 - 支持多个 worker 节点并行处理
 - 服务解耦：
@@ -86,11 +94,12 @@ async def process_package_task(task):
   - packaging_worker: 处理文件打包
 
 ### 2.2 内存资源管理
+
 ```python
 # src/app/core/worker/packaging_worker.py
 def get_dynamic_batch_size():
     memory = psutil.virtual_memory()
-    
+
     if memory.percent >= 90:
         return max(10, BASE_BATCH_SIZE // 4)
     elif memory.percent >= 80:
@@ -102,7 +111,9 @@ def get_dynamic_batch_size():
 - 防止 OOM 错误
 
 ### 2.3 故障转移与任务重试
+
 - 使用 tenacity 库实现重试机制：
+
 ```python
 @retry(stop=stop_after_attempt(3), wait=wait_none())
 async def process_single_message(consumer, translation_service, msg)

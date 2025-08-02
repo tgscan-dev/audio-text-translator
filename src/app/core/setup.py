@@ -44,13 +44,7 @@ async def close_redis_cache_pool() -> None:
 
 
 def lifespan_factory(
-    settings: (
-        DatabaseSettings
-        | RedisCacheSettings
-        | AppSettings
-        | ClientSideCacheSettings
-        | EnvironmentSettings
-    ),
+    settings: (DatabaseSettings | RedisCacheSettings | AppSettings | ClientSideCacheSettings | EnvironmentSettings),
     create_tables_on_start: bool = True,
 ) -> Callable[[FastAPI], _AsyncGeneratorContextManager[Any]]:
     """Factory to create a lifespan async context manager for a FastAPI app."""
@@ -86,13 +80,7 @@ def lifespan_factory(
 # -------------- application --------------
 def create_application(
     router: APIRouter,
-    settings: (
-        DatabaseSettings
-        | RedisCacheSettings
-        | AppSettings
-        | ClientSideCacheSettings
-        | EnvironmentSettings
-    ),
+    settings: (DatabaseSettings | RedisCacheSettings | AppSettings | ClientSideCacheSettings | EnvironmentSettings),
     create_tables_on_start: bool = True,
     lifespan: Callable[[FastAPI], _AsyncGeneratorContextManager[Any]] | None = None,
     **kwargs: Any,
